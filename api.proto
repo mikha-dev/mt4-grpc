@@ -1,0 +1,261 @@
+syntax = "proto3";
+
+package api_pb;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/api/httpbody.proto";
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+import "google/protobuf/field_mask.proto";
+
+enum Cmd {
+    CMD_BUY = 0;
+    CMD_SELL = 1;
+}
+
+message UserInfo {
+    // Output only.
+    int32 login = 1;
+    string group = 2;
+    string name = 3;
+    int32 enabled = 4;
+    int32 leverage = 5;
+    // Output only.
+    double balance = 6;
+    // Output only.
+    double credit = 7;
+    int32 agent_account = 8;
+}
+
+message UserInfoRequest {
+    string token = 1;
+    int32 login = 2;
+}
+
+message UserInfoResponse {
+    UserInfo user = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+
+message AddUserInfo {
+    string email = 1;
+    string password = 2;
+    string password_investor = 3;
+    string group = 4;
+    string name = 5;
+    int32 login = 6;
+    int32 enabled = 7;
+    string city = 8;
+    string phone = 9;
+}
+
+message AddUserRequest {
+    string token = 1;
+    AddUserInfo user = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message AddUserResponse {
+    int32 login = 1;
+    int32 code = 2;
+    string message = 3;
+}
+
+message UpdateUserInfo {
+    int32 login = 1;
+    string email = 2;
+    string name = 3;
+    int32 enabled = 4;
+    string password = 5;
+    string password_investor = 6;
+    string phone = 7;
+    string city = 8;
+    string group = 9;
+}
+
+message UpdateUserRequest {
+    string token = 1;
+    UpdateUserInfo user = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateUserResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message DeleteUserRequest {
+    string token = 1;
+    int32 login = 2;
+}
+
+message DeleteUserResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message ResetPasswordInfo {
+    int32 login = 1;
+    string password = 2;
+    string password_investor = 3;
+}
+
+message ResetPasswordRequest {
+    string token = 1;
+    ResetPasswordInfo user = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message ResetPasswordResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message FundsInfo {
+    int32 login = 1;
+    double amount = 2;
+    int32 is_credit = 3;
+    string comment = 4;
+}
+
+message FundsRequest {
+    string token = 1;
+    FundsInfo user = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message FundsResponse {
+    double balance = 1;
+    double credit = 2;
+}
+
+message TradeInfo {
+    int32 ticket = 1;
+    int32 login = 2;
+    string symbol = 3;
+    int32 digits = 4;
+    Cmd cmd = 5;
+    int32 volume = 6;
+    int32 open_time = 7;
+    int32 state = 8;
+    double open_price = 9;
+    double sl = 10;
+    double tp = 11;
+    int32 close_time = 12;
+    int32 expiration = 13;
+    double commission = 14;
+    double close_price = 15;
+    double profit = 16;
+    int32 magic = 17;
+    string comment = 18;
+}
+
+message OpenTradeRequest {
+    int32 login = 1;
+    string symbol = 2;
+    Cmd cmd = 3;
+    double price = 4;
+    int32 slippage = 5;
+    double sl = 6;
+    double tp = 7;
+    int32 volume = 8;
+    string comment = 9;
+}
+
+message OpenTradeResponse {
+    int32 ticket = 1;
+    int32 error_code = 2;
+    string message = 3;
+}
+
+message UpdateTradeRequest {
+    int32 ticket = 1;
+    double price = 4;
+    double sl = 6;
+    double tp = 7;
+}
+
+message UpdateTradeResponse {
+    int32 error_code = 1;
+    string message = 2;
+}
+
+message CloseTradeRequest {
+    int32 ticket = 1;
+    int32 volume = 2;
+}
+
+message CloseTradeResponse {
+    int32 error_code = 1;
+    string message = 2;
+}
+
+service UserService {
+
+    rpc GetInfo(UserInfoRequest) returns (UserInfoResponse) {
+        option (google.api.http) = {
+            get: "/user/{login}"
+        };
+    }
+
+    rpc Delete(DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http) = {
+            delete: "/user/{token}/{login}"
+        };
+    }
+
+    rpc Add(AddUserRequest) returns (AddUserResponse) {
+        option (google.api.http) = {
+            post: "/user/add/{token}",
+            body: "user"
+        };
+    }
+
+    rpc Update(UpdateUserRequest) returns (UpdateUserResponse) {
+        option (google.api.http) = {
+            put: "/user/update/{token}"
+            body: "user"
+            additional_bindings {
+                patch: "/user/update/{token}"
+                body: "user"
+            }
+        };
+    }
+
+    rpc Withdraw(FundsRequest) returns (FundsResponse) {
+        option (google.api.http) = {
+            put: "/user/withdraw/{token}"
+            body: "user"
+            additional_bindings {
+                patch: "/user/withraw/{token}"
+                body: "user"
+            }
+        };
+    }
+
+    rpc Deposit(FundsRequest) returns (FundsResponse) {
+        option (google.api.http) = {
+            put: "/user/deposit/{token}"
+            body: "user"
+            additional_bindings {
+                patch: "/user/deposit/{token}"
+                body: "user"
+            }
+        };
+    }
+
+    rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
+        option (google.api.http) = {
+            put: "/user/reset_password/{token}"
+            body: "user"
+            additional_bindings {
+                patch: "/user/reset_password/{token}"
+                body: "user"
+            }
+        };
+    }
+
+}
